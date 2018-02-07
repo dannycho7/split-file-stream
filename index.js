@@ -4,9 +4,14 @@ const generateFileName = (rootFileName, numFiles) => `${rootFileName}.split-${nu
 
 module.exports.split = (fileStream, maxFileSize, rootFileName, callback) => {
 	const partitionNames = [], { highWaterMark: defaultChunkSize } = fileStream._readableState;
-	let currentFileSize = 0, currentFileName, openStream = false;
+	let currentFileSize = 0, currentFileName, openStream = false, finishedWriteSreams = 0, fileStreamEnded = false;
 
 	let currentFileWriteStream;
+	const callbackAttempt = () => {
+		if(fileStreamEnded && partitionNames.length == finishedWriteSreams) {
+			callback(partitionNames);
+		}
+	};
 
 	fileStream.on("readable", () => {
 		let chunk;
@@ -14,6 +19,10 @@ module.exports.split = (fileStream, maxFileSize, rootFileName, callback) => {
 			if(openStream == false) {
 				currentFileName = generateFileName(rootFileName, partitionNames.length);
 				currentFileWriteStream = fs.createWriteStream(currentFileName);
+				currentFileWriteStream.on("finish", () => {
+					finishedWriteSreams++;
+					callbackAttempt();
+				});
 				partitionNames.push(currentFileName);
 				openStream = true;
 			}
@@ -30,7 +39,10 @@ module.exports.split = (fileStream, maxFileSize, rootFileName, callback) => {
 		}
 	});
 
-	fileStream.on("end", () => callback(partitionNames));
+	fileStream.on("end", () => {
+		fileStreamEnded = true;
+		callbackAttempt()
+	});
 };
 
 const _mergeFiles = (partition_index, partition_names, writeOutStream, callback) => {
