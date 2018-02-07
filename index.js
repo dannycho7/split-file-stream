@@ -53,7 +53,7 @@ module.exports.split = (fileStream, maxFileSize, rootFileName, callback) => {
 	});
 };
 
-const _mergeFiles = (partition_index, partition_names, writeOutStream, callback) => {
+const _mergeFilesToDisk = (partition_index, partition_names, writeOutStream, callback) => {
 	if(partition_index == partition_names.length) {
 		writeOutStream.close();
 		return callback();
@@ -61,10 +61,10 @@ const _mergeFiles = (partition_index, partition_names, writeOutStream, callback)
 	let partitionFileStream = fs.createReadStream(partition_names[partition_index]);
 
 	partitionFileStream.on("data", (chunk) => writeOutStream.write(chunk));
-	partitionFileStream.on("end", () => _mergeFiles(++partition_index, partition_names, writeOutStream, callback));
+	partitionFileStream.on("end", () => _mergeFilesToDisk(++partition_index, partition_names, writeOutStream, callback));
 };
 
-module.exports.mergeFiles = (partition_names, outputPath, callback) => {
+module.exports.mergeFilesToDisk = (partition_names, outputPath, callback) => {
 	let outputWriteStream = fs.createWriteStream(outputPath);
-	_mergeFiles(0, partition_names, outputWriteStream, callback);
+	_mergeFilesToDisk(0, partition_names, outputWriteStream, callback);
 };

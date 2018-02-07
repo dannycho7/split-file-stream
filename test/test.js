@@ -1,4 +1,5 @@
 const assert = require("assert");
+const fs = require("fs");
 const stream = require("stream");
 const splitFileStream = require("..");
 
@@ -10,9 +11,7 @@ describe("splitFileStream", () => {
 
 			splitFileStream.split(readStream, 1, __dirname + "/output/ff", (fileNames) => {
 				assert.equal(5, fileNames.length);
-				splitFileStream.mergeFiles(fileNames, __dirname + "/output/ff.fullfile", () => {
-					return done();
-				});
+				return done();
 			});
 		});
 
@@ -22,8 +21,24 @@ describe("splitFileStream", () => {
 
 			splitFileStream.split(readStream, 1024 * 1024 * 50, __dirname + "/output/ff", (fileNames) => {
 				assert.equal(2, fileNames.length);
-				splitFileStream.mergeFiles(fileNames, __dirname + "/output/ff.fullfile", () => {
-					return done();
+				return done();
+			});
+		});
+	});
+
+	describe("#merge", () => {
+		it("Should merge 2 1mb partitions into one file", (done) => {
+			let readStream = new stream.PassThrough();
+			readStream.end(new Buffer(1024 * 1024 * 2));
+
+			splitFileStream.split(readStream, 1024 * 1024 * 1, __dirname + "/output/ff", (fileNames) => {
+				assert.equal(2, fileNames.length);
+				let mergeFilePath = __dirname + "/output/ff.fullfile";
+				splitFileStream.mergeFilesToDisk(fileNames, mergeFilePath, () => {
+					fs.stat(mergeFilePath, (err, stats) => {
+						assert.equal(1024 * 1024 * 2, stats.size);
+						return done();
+					});
 				});
 			});
 		});
