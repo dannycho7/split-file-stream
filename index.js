@@ -1,4 +1,5 @@
 const fs = require("fs");
+const stream = require("stream");
 
 const generateFileName = (rootFileName, numFiles) => `${rootFileName}.split-${numFiles}`;
 
@@ -8,7 +9,7 @@ module.exports.split = (fileStream, maxFileSize, rootFileName, callback) => {
 
 	let currentFileWriteStream;
 
-	const closeCurrentWriteStream = () => {
+	const endCurrentWriteStream = () => {
 		currentFileWriteStream.end();
 		currentFileWriteStream = null;
 		currentFileSize = 0;
@@ -39,32 +40,38 @@ module.exports.split = (fileStream, maxFileSize, rootFileName, callback) => {
 			currentFileSize += chunk.length;
 
 			if(currentFileSize == maxFileSize) {
-				closeCurrentWriteStream();
+				endCurrentWriteStream();
 			}
 		}
 	});
 
 	fileStream.on("end", () => {
 		if(currentFileWriteStream) {
-			closeCurrentWriteStream();
+			endCurrentWriteStream();
 		}
 		fileStreamEnded = true;
 		callbackAttempt();
 	});
 };
 
-const _mergeFilesToDisk = (partition_index, partition_names, writeOutStream, callback) => {
-	if(partition_index == partition_names.length) {
-		writeOutStream.close();
+const _mergeFiles = (partitionIndex, partitionNames, combinationStream, callback) => {
+	if(partitionIndex == partitionNames.length) {
+		combinationStream.end();
 		return callback();
 	}
-	let partitionFileStream = fs.createReadStream(partition_names[partition_index]);
+	let partitionFileStream = fs.createReadStream(partitionNames[partitionIndex]);
 
-	partitionFileStream.on("data", (chunk) => writeOutStream.write(chunk));
-	partitionFileStream.on("end", () => _mergeFilesToDisk(++partition_index, partition_names, writeOutStream, callback));
+	partitionFileStream.on("data", (chunk) => combinationStream.write(chunk));
+	partitionFileStream.on("end", () => _mergeFiles(++partitionIndex, partitionNames, combinationStream, callback));
 };
 
-module.exports.mergeFilesToDisk = (partition_names, outputPath, callback) => {
-	let outputWriteStream = fs.createWriteStream(outputPath);
-	_mergeFilesToDisk(0, partition_names, outputWriteStream, callback);
+module.exports.mergeFilesToDisk = (partitionNames, outputPath, callback) => {
+	let combinationStream = fs.createWriteStream(outputPath);
+	_mergeFiles(0, partitionNames, combinationStream, callback);
+};
+
+module.exports.mergeFilesToStream = (partitionNames, callback) => {
+	let combinationStream = new stream.PassThrough();
+	callback(combinationStream);
+	_mergeFiles(0, partitionNames, combinationStream, () => {});
 };
