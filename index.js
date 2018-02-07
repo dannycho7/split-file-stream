@@ -7,6 +7,14 @@ module.exports.split = (fileStream, maxFileSize, rootFileName, callback) => {
 	let currentFileSize = 0, currentFileName, openStream = false, finishedWriteSreams = 0, fileStreamEnded = false;
 
 	let currentFileWriteStream;
+
+	const closeCurrentWriteStream = () => {
+		currentFileWriteStream.end();
+		currentFileWriteStream = null;
+		currentFileSize = 0;
+		openStream = false;
+	};
+
 	const callbackAttempt = () => {
 		if(fileStreamEnded && partitionNames.length == finishedWriteSreams) {
 			callback(partitionNames);
@@ -31,17 +39,17 @@ module.exports.split = (fileStream, maxFileSize, rootFileName, callback) => {
 			currentFileSize += chunk.length;
 
 			if(currentFileSize == maxFileSize) {
-				currentFileWriteStream.end();
-				currentFileWriteStream = null;
-				currentFileSize = 0;
-				openStream = false;
+				closeCurrentWriteStream();
 			}
 		}
 	});
 
 	fileStream.on("end", () => {
+		if(currentFileWriteStream) {
+			closeCurrentWriteStream();
+		}
 		fileStreamEnded = true;
-		callbackAttempt()
+		callbackAttempt();
 	});
 };
 
