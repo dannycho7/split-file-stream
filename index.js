@@ -34,7 +34,10 @@ module.exports.split = (fileStream, maxFileSize, rootFileName, callback) => {
 };
 
 const _mergeFiles = (partition_index, partition_names, writeOutStream, callback) => {
-	if(partition_index == partition_names.length) return callback();
+	if(partition_index == partition_names.length) {
+		writeOutStream.close();
+		return callback();
+	}
 	let partitionFileStream = fs.createReadStream(partition_names[partition_index]);
 
 	partitionFileStream.on("data", (chunk) => writeOutStream.write(chunk));
