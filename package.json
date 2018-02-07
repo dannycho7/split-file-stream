@@ -1,12 +1,12 @@
 {
   "name": "split-file-stream",
   "version": "1.0.0",
-  "description": "",
+  "description": "Partition your readable streams into multiple files.",
   "main": "index.js",
   "scripts": {
     "test": "node test.js"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": ["File Partitioning", "streams"],
+  "author": "Danny Cho",
   "license": "ISC"
 }
