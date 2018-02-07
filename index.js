@@ -11,8 +11,6 @@ module.exports.split = (fileStream, maxFileSize, rootFileName, callback) => {
 	fileStream.on("readable", () => {
 		let chunk;
 		while (null !== (chunk = fileStream.read(Math.min(maxFileSize - currentFileSize, defaultChunkSize)))) {
-			console.log(`Received ${chunk.length} bytes of data.`);
-
 			if(openStream == false) {
 				currentFileName = generateFileName(rootFileName, partitionNames.length);
 				currentFileWriteStream = fs.createWriteStream(currentFileName);
@@ -32,14 +30,18 @@ module.exports.split = (fileStream, maxFileSize, rootFileName, callback) => {
 		}
 	});
 
-	fileStream.on("close", () => {
-		callback(partitionNames);
-	});
+	fileStream.on("end", () => callback(partitionNames));
+};
+
+const _mergeFiles = (partition_index, partition_names, writeOutStream, callback) => {
+	if(partition_index == partition_names.length) return callback();
+	let partitionFileStream = fs.createReadStream(partition_names[partition_index]);
+
+	partitionFileStream.on("data", (chunk) => writeOutStream.write(chunk));
+	partitionFileStream.on("end", () => _mergeFiles(++partition_index, partition_names, writeOutStream, callback));
 };
 
 module.exports.mergeFiles = (partition_names, outputPath, callback) => {
 	let outputWriteStream = fs.createWriteStream(outputPath);
-	let partition_index = 0;
-
-
+	_mergeFiles(0, partition_names, outputWriteStream, callback);
 };

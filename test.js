@@ -3,8 +3,11 @@ const stream = require("stream");
 const splitFileStream = require(".");
 
 let readStream = new stream.PassThrough();
-readStream.end(new Buffer(5));
+readStream.end("abcde");
 
-splitFileStream.split(readStream, 2, "filenameblahblablaflaska", (fileNames) => {
-	assert.equal(3, fileNames.length);
+splitFileStream.split(readStream, 1, __dirname + "/ff", (fileNames) => {
+	assert.equal(5, fileNames.length);
+	splitFileStream.mergeFiles(fileNames, "ff.fullfile", () => {
+		console.log("Merge file function finished");
+	});
 });
