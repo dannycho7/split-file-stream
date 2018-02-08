@@ -1,8 +1,8 @@
 # split-file-stream
 
-Partition your readable streams into multiple files or combine files into merged stream.
+Partition your readable streams into multiple files or combine files into one merged readable stream.
 
-You should use this module if:
+### You should use this module if:
 * You have a readable stream and want to save to multiple files
 	* Other solutions require you to supply a path as the source.
 		* This means you'd have to write your readable stream first, before partitioning the data.
