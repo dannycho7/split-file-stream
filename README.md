@@ -1,4 +1,5 @@
 # split-file-stream
+[![npm version](https://badge.fury.io/js/split-file-stream.svg)](https://badge.fury.io/js/split-file-stream)
 
 Partition your readable streams into multiple files or combine files into one merged readable stream.
 
