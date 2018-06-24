@@ -27,9 +27,7 @@ module.exports.mergeFilesToStream = (partitionNames, callback) => {
 
 module.exports.split = (fileStream, maxFileSize, rootFileName, callback) => {
 	const partitionNames = [], { highWaterMark: defaultChunkSize } = fileStream._readableState;
-	let currentFileSize = 0, currentFileName, openStream = false, finishedWriteStreams = 0, fileStreamEnded = false;
-
-	let currentFileWriteStream;
+	let currentFileSize = 0, currentFileName, currentFileWriteStream, openStream = false, finishedWriteStreams = 0, fileStreamEnded = false;
 
 	const endCurrentWriteStream = () => {
 		currentFileWriteStream.end();
@@ -38,7 +36,8 @@ module.exports.split = (fileStream, maxFileSize, rootFileName, callback) => {
 		openStream = false;
 	};
 
-	const callbackAttempt = () => {
+	const writeStreamFinishHandler = () => {
+		finishedWriteStreams++;
 		if(fileStreamEnded && partitionNames.length == finishedWriteStreams) {
 			callback(partitionNames);
 		}
@@ -50,10 +49,7 @@ module.exports.split = (fileStream, maxFileSize, rootFileName, callback) => {
 			if(openStream == false) {
 				currentFileName = generateFileName(rootFileName, partitionNames.length);
 				currentFileWriteStream = fs.createWriteStream(currentFileName);
-				currentFileWriteStream.on("finish", () => {
-					finishedWriteStreams++;
-					callbackAttempt();
-				});
+				currentFileWriteStream.on("finish", writeStreamFinishHandler);
 				partitionNames.push(currentFileName);
 				openStream = true;
 			}
@@ -72,6 +68,5 @@ module.exports.split = (fileStream, maxFileSize, rootFileName, callback) => {
 			endCurrentWriteStream();
 		}
 		fileStreamEnded = true;
-		callbackAttempt();
 	});
 };
