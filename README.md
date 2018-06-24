@@ -24,17 +24,17 @@ var splitFileStream = require("split-file-stream");
 let fileSize = 1024; // 1024 bytes per file
 let outputPaths = __dirname + "/outputFiles"; // file path partition's prefix
 
-splitFileStream.split(readStream, fileSize, outputPaths, (fileNames) => {
-	console.log("This is an array of my new files:" fileNames);
+splitFileStream.split(readStream, fileSize, outputPaths, (filePaths) => {
+	console.log("This is an array of my new files:" filePaths);
 });
 ```
 
 To merge a set of files together into one output stream:
 ```javascript
 var splitFileStream = require("split-file-stream");
-let fileNames = fileNames; // take this fileNames array from the output of the split method
+let filePaths = filePaths; // take this filePaths array from the output of the split method
 
-splitFileStream.mergeFilesToStream(fileNames, (outStream) => {
+splitFileStream.mergeFilesToStream(filePaths, (outStream) => {
 	outStream.on("data", (chunk) => {
 		console.log(`Received chunk of ${chunk.length} bytes`);
 	});
@@ -49,10 +49,10 @@ To merge a set of files to write to disk:
 ```javascript
 // Note: You can also do this with the mergeFilesToStream method and piping the stream to a fs writeStream.
 var splitFileStream = require("split-file-stream");
-let fileNames = fileNames; // take this fileNames array from the output of the split method
+let filePaths = filePaths; // take this filePaths array from the output of the split method
 let outputPath = __dirname + "/outputFile";
 
-splitFileStream.mergeFilesToDisk(fileNames, outputPath, () => {
+splitFileStream.mergeFilesToDisk(filePaths, outputPath, () => {
     console.log("Finished merging files");
 });
 ```
@@ -61,10 +61,10 @@ Example usage of the mergeFilesToDisk method using the mergeFilesToStream method
 ```javascript
 var fs = require("fs");
 var splitFileStream = require("split-file-stream");
-let fileNames = fileNames; // take this fileNames array from the output of the split method
+let filePaths = filePaths; // take this filePaths array from the output of the split method
 let outputPath = __dirname + "/outputFile";
 
-splitFileStream.mergeFilesToStream(fileNames, (outStream) => {
+splitFileStream.mergeFilesToStream(filePaths, (outStream) => {
 	let writeStream = fs.createWriteStream(outputPath);
 	outStream.pipe(writeStream);
 });

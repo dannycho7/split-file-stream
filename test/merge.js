@@ -8,10 +8,10 @@ describe("#mergeFilesToDisk", () => {
 		let readStream = new stream.PassThrough();
 		readStream.end(new Buffer(1024 * 1024 * 2));
 
-		splitFileStream.split(readStream, 1024 * 1024 * 1, __dirname + "/output/ff", (fileNames) => {
-			assert.equal(2, fileNames.length);
+		splitFileStream.split(readStream, 1024 * 1024 * 1, __dirname + "/output/ff", (filePaths) => {
+			assert.equal(2, filePaths.length);
 			let mergeFilePath = __dirname + "/output/ff.fullfile";
-			splitFileStream.mergeFilesToDisk(fileNames, mergeFilePath, () => {
+			splitFileStream.mergeFilesToDisk(filePaths, mergeFilePath, () => {
 				fs.stat(mergeFilePath, (err, stats) => {
 					assert.equal(1024 * 1024 * 2, stats.size);
 					return done();
@@ -26,10 +26,10 @@ describe("#mergeFilesToStream", () => {
 		let readStream = new stream.PassThrough();
 		readStream.end(new Buffer(1024 * 1024 * 2));
 
-		splitFileStream.split(readStream, 1024 * 1024 * 1, __dirname + "/output/ff", (fileNames) => {
-			assert.equal(2, fileNames.length);
+		splitFileStream.split(readStream, 1024 * 1024 * 1, __dirname + "/output/ff", (filePaths) => {
+			assert.equal(2, filePaths.length);
 			let mergeFilePath = __dirname + "/output/ff.fullfile";
-			splitFileStream.mergeFilesToStream(fileNames, (stream) => {
+			splitFileStream.mergeFilesToStream(filePaths, (stream) => {
 				let dataLength = 0;
 				stream.on("data", (chunk) => {
 					dataLength += chunk.length;

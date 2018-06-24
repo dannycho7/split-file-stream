@@ -8,8 +8,8 @@ describe("#split", () => {
 		let readStream = new stream.PassThrough();
 		readStream.end("abcde");
 
-		splitFileStream.split(readStream, 1, __dirname + "/output/ff", (fileNames) => {
-			assert.equal(5, fileNames.length);
+		splitFileStream.split(readStream, 1, __dirname + "/output/ff", (filePaths) => {
+			assert.equal(5, filePaths.length);
 			return done();
 		});
 	});
@@ -18,8 +18,8 @@ describe("#split", () => {
 		let readStream = new stream.PassThrough();
 		readStream.end(new Buffer(1024 * 1024 * 100));
 
-		splitFileStream.split(readStream, 1024 * 1024 * 50, __dirname + "/output/ff", (fileNames) => {
-			assert.equal(2, fileNames.length);
+		splitFileStream.split(readStream, 1024 * 1024 * 50, __dirname + "/output/ff", (filePaths) => {
+			assert.equal(2, filePaths.length);
 			return done();
 		});
 	});
