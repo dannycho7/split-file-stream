@@ -1,4 +1,5 @@
 const fs = require("fs");
+const path = require("path");
 const stream = require("stream");
 
 const generateFilePath = (rootFileName, numFiles) => `${rootFileName}.split-${numFiles}`;
@@ -25,48 +26,66 @@ module.exports.mergeFilesToStream = (partitionNames, callback) => {
 	callback(combinationStream);
 };
 
-module.exports.split = (fileStream, maxFileSize, rootFileName, callback) => {
-	const partitionNames = [], { highWaterMark: defaultChunkSize } = fileStream._readableState;
-	let currentFileSize = 0, currentFilePath, currentFileWriteStream, openStream = false, finishedWriteStreams = 0, fileStreamEnded = false;
+
+const _splitToStream = (outStreamCreate, fileStream, partitionStreamSize, callback) => {
+	const outStreams = [], { highWaterMark: defaultChunkSize } = fileStream._readableState;
+	let currentOutStream, currentFileSize = 0, fileStreamEnded = false, finishedWriteStreams = 0, openStream = false, partitionNum = 0;
 
 	const endCurrentWriteStream = () => {
-		currentFileWriteStream.end();
-		currentFileWriteStream = null;
+		currentOutStream.end();
+		currentOutStream = null;
 		currentFileSize = 0;
 		openStream = false;
 	};
 
 	const writeStreamFinishHandler = () => {
 		finishedWriteStreams++;
-		if(fileStreamEnded && partitionNames.length == finishedWriteStreams) {
-			callback(partitionNames);
+		if(fileStreamEnded && partitionNum == finishedWriteStreams) {
+			callback(outStreams);
 		}
 	};
 
 	fileStream.on("readable", () => {
 		let chunk;
-		while (null !== (chunk = fileStream.read(Math.min(maxFileSize - currentFileSize, defaultChunkSize)))) {
+		while (null !== (chunk = fileStream.read(Math.min(partitionStreamSize - currentFileSize, defaultChunkSize)))) {
 			if(openStream == false) {
-				currentFilePath = generateFilePath(rootFileName, partitionNames.length);
-				currentFileWriteStream = fs.createWriteStream(currentFilePath);
-				currentFileWriteStream.on("finish", writeStreamFinishHandler);
-				partitionNames.push(currentFilePath);
+				currentOutStream = outStreamCreate(partitionNum);
+				currentOutStream.on("finish", writeStreamFinishHandler);
+				outStreams.push(currentOutStream);
+				partitionNum++;
 				openStream = true;
 			}
 
-			currentFileWriteStream.write(chunk);
+			currentOutStream.write(chunk);
 			currentFileSize += chunk.length;
 
-			if(currentFileSize == maxFileSize) {
+			if(currentFileSize == partitionStreamSize) {
 				endCurrentWriteStream();
 			}
 		}
 	});
 
 	fileStream.on("end", () => {
-		if(currentFileWriteStream) {
+		if(currentOutStream) {
 			endCurrentWriteStream();
 		}
 		fileStreamEnded = true;
 	});
 };
+
+const split = (fileStream, maxFileSize, rootFilePath, callback) => {
+	const partitionNames = [];
+
+	const outStreamCreate = (partitionNum) => {
+		let filePath = generateFilePath(rootFilePath, partitionNum);
+		return fs.createWriteStream(filePath);
+	};
+
+	_splitToStream(outStreamCreate, fileStream, maxFileSize, (fileWriteStreams) => {
+		fileWriteStreams.forEach((fileWriteStream) => partitionNames.push(fileWriteStream["path"]));
+		callback(partitionNames);
+	});
+};
+
+module.exports.split = split;
+module.exports._splitToStream = _splitToStream;

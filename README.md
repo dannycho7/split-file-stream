@@ -69,3 +69,17 @@ splitFileStream.mergeFilesToStream(filePaths, (outStream) => {
 	outStream.pipe(writeStream);
 });
 ```
+
+Alternatively, if you'd like a lower level API for splitting a stream, you can use _splitToStream. This function will split your readable stream into multiple streams. This function is what is used to implement the split function.
+```javascript
+var stream = require("stream");
+var splitFileStream = require("split-file-stream");
+let partitionStreamSize = 1024; // 1024 bytes per partition
+const outStreamCreate = (partitionNum) => {
+	return stream.passThrough();
+};
+
+splitFileStream._splitToStream(outStreamCreate, readStream, partitionStreamSize, (outStreams) => {
+	console.log("This is an array of the created output streams:" outStreams);
+});
+```

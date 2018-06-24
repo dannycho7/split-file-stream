@@ -23,4 +23,20 @@ describe("#split", () => {
 			return done();
 		});
 	});
+
+	it("should create partitions that retain the same data", (done) => {
+		let readStream = new stream.PassThrough(), inStreamContents = "CORRECT";
+		readStream.end(inStreamContents);
+
+		splitFileStream.split(readStream, 1, __dirname + "/output/ff", (filePaths) => {
+			let concatString = "";
+			filePaths.forEach((filePath) => {
+				let fileContent = fs.readFileSync(filePath);
+				concatString += fileContent;
+			});
+
+			assert.equal(concatString, inStreamContents);
+			return done();
+		});
+	});
 });
