@@ -2,8 +2,6 @@ const fs = require("fs");
 const path = require("path");
 const stream = require("stream");
 
-const generateFilePath = (rootFileName, numFiles) => `${rootFileName}.split-${numFiles}`;
-
 const _mergeFiles = (partitionIndex, partitionNames, combinationStream, callback) => {
 	if(partitionIndex == partitionNames.length) {
 		combinationStream.end();
@@ -73,7 +71,11 @@ const _splitToStream = (outStreamCreate, fileStream, partitionStreamSize, callba
 	});
 };
 
-const split = (fileStream, maxFileSize, rootFilePath, callback) => {
+const split = (fileStream, maxFileSize, rootFilePath, callback) => _split(fileStream, maxFileSize, rootFilePath, (r, n) => `${r}.split-${n}`, callback);
+
+const getSplitWithGenFilePath = (generateFilePath) => ( (f, m, r, callback) => _split(f, m, r, generateFilePath, callback) )
+
+const _split = (fileStream, maxFileSize, rootFilePath, generateFilePath, callback) => {
 	const partitionNames = [];
 
 	const outStreamCreate = (partitionNum) => {
@@ -88,4 +90,5 @@ const split = (fileStream, maxFileSize, rootFilePath, callback) => {
 };
 
 module.exports.split = split;
+module.exports.getSplitWithGenFilePath = getSplitWithGenFilePath;
 module.exports._splitToStream = _splitToStream;
