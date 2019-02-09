@@ -70,6 +70,18 @@ splitFileStream.mergeFilesToStream(filePaths, (outStream) => {
 });
 ```
 
+To split a read stream with a custom function that determines the file name:
+```javascript
+var splitFileStream = require("split-file-stream");
+let fileSize = 1024; // 1024 bytes per file
+let outputPaths = __dirname + "/outputFiles"; // file path partition's prefix
+var customSplit = splitFileStream.getSplitWithGenFilePath((r, n) => `${r}-${(n + 1)}`)
+
+customSplit(readStream, fileSize, outputPaths, (filePaths) => {
+	console.log("This is an array of my new files:" filePaths);
+});
+```
+
 Alternatively, if you'd like a lower level API for splitting a stream, you can use _splitToStream. This function will split your readable stream into multiple streams. This function is what is used to implement the split function.
 ```javascript
 var stream = require("stream");

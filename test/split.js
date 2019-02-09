@@ -16,7 +16,7 @@ describe("#split", () => {
 
 	it("should create 2 partitions for 100mb file of 50mb chunks", (done) => {
 		let readStream = new stream.PassThrough();
-		readStream.end(new Buffer(1024 * 1024 * 100));
+		readStream.end(new Buffer.alloc(1024 * 1024 * 100));
 
 		splitFileStream.split(readStream, 1024 * 1024 * 50, __dirname + "/output/ff", (filePaths) => {
 			assert.equal(2, filePaths.length);

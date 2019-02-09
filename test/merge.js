@@ -6,7 +6,7 @@ const splitFileStream = require("..");
 describe("#mergeFilesToDisk", () => {
 	it("Should merge 2 1mb partitions into one file", (done) => {
 		let readStream = new stream.PassThrough();
-		readStream.end(new Buffer(1024 * 1024 * 2));
+		readStream.end(new Buffer.alloc(1024 * 1024 * 2));
 
 		splitFileStream.split(readStream, 1024 * 1024 * 1, __dirname + "/output/ff", (filePaths) => {
 			assert.equal(2, filePaths.length);
@@ -24,7 +24,7 @@ describe("#mergeFilesToDisk", () => {
 describe("#mergeFilesToStream", () => {
 	it("Should merge 2 1mb partitions into one file stream", (done) => {
 		let readStream = new stream.PassThrough();
-		readStream.end(new Buffer(1024 * 1024 * 2));
+		readStream.end(new Buffer.alloc(1024 * 1024 * 2));
 
 		splitFileStream.split(readStream, 1024 * 1024 * 1, __dirname + "/output/ff", (filePaths) => {
 			assert.equal(2, filePaths.length);
