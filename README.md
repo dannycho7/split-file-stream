@@ -21,10 +21,10 @@ npm install --save split-file-stream
 To split a read stream into multiple files:
 ```javascript
 var splitFileStream = require("split-file-stream");
-let fileSize = 1024; // 1024 bytes per file
+let maxFileSize = 1024; // 1024 bytes per file
 let outputPath = __dirname + "/outputFiles"; // file path partition's prefix
 
-splitFileStream.split(readStream, fileSize, outputPath, (filePaths) => {
+splitFileStream.split(readStream, maxFileSize, outputPath, (filePaths) => {
 	console.log("This is an array of my new files:" filePaths);
 	/* stream will be saved to files in the path ∈ { ./outputFiles.split-x | x ∈ N } */
 });
@@ -74,11 +74,11 @@ splitFileStream.mergeFilesToStream(filePaths, (outStream) => {
 To split a read stream with a custom function that determines the file name:
 ```javascript
 var splitFileStream = require("split-file-stream");
-let fileSize = 1024; // 1024 bytes per file
+let maxFileSize = 1024; // 1024 bytes per file
 let outputPath = __dirname + "/outputFiles"; // file path partition's prefix
 var customSplit = splitFileStream.getSplitWithGenFilePath((n) => `${outputPath}-${(n + 1)}`)
 
-customSplit(readStream, fileSize, (filePaths) => {
+customSplit(readStream, maxFileSize, (filePaths) => {
 	console.log("This is an array of my new files:" filePaths);
 });
 ```
