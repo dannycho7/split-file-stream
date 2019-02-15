@@ -1,9 +1,21 @@
 const assert = require("assert");
+const { AssertionError } = assert;
 const fs = require("fs");
 const stream = require("stream");
 const splitFileStream = require("..");
 
 describe("#split", () => {
+	it("should throw on maxFileSize <= 0", (done) => {
+		let readStream = new stream.PassThrough();
+		readStream.end("abcde");
+
+		let brokenSplitCall = () =>
+			splitFileStream.split(readStream, 0, __dirname + "/output/ff", () => {});
+
+		assert.throws(brokenSplitCall, AssertionError);
+		return done();
+	});
+
 	it("should create 5 partitions for a 5 word string of 1 byte partitions", (done) => {
 		let readStream = new stream.PassThrough();
 		readStream.end("abcde");
