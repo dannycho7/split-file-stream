@@ -22,10 +22,11 @@ To split a read stream into multiple files:
 ```javascript
 var splitFileStream = require("split-file-stream");
 let fileSize = 1024; // 1024 bytes per file
-let outputPaths = __dirname + "/outputFiles"; // file path partition's prefix
+let outputPath = __dirname + "/outputFiles"; // file path partition's prefix
 
-splitFileStream.split(readStream, fileSize, outputPaths, (filePaths) => {
+splitFileStream.split(readStream, fileSize, outputPath, (filePaths) => {
 	console.log("This is an array of my new files:" filePaths);
+	/* stream will be saved to files in the path ∈ { ./outputFiles.split-x | x ∈ N } */
 });
 ```
 
@@ -74,15 +75,15 @@ To split a read stream with a custom function that determines the file name:
 ```javascript
 var splitFileStream = require("split-file-stream");
 let fileSize = 1024; // 1024 bytes per file
-let outputPaths = __dirname + "/outputFiles"; // file path partition's prefix
-var customSplit = splitFileStream.getSplitWithGenFilePath((r, n) => `${r}-${(n + 1)}`)
+let outputPath = __dirname + "/outputFiles"; // file path partition's prefix
+var customSplit = splitFileStream.getSplitWithGenFilePath((n) => `${outputPath}-${(n + 1)}`)
 
-customSplit(readStream, fileSize, outputPaths, (filePaths) => {
+customSplit(readStream, fileSize, (filePaths) => {
 	console.log("This is an array of my new files:" filePaths);
 });
 ```
 
-Alternatively, if you'd like a lower level API for splitting a stream, you can use _splitToStream. This function will split your readable stream into multiple streams. This function is what is used to implement the split function.
+Alternatively, if you'd like a lower level API for splitting a stream, you can use `_splitToStream`. This function will split your readable stream into multiple streams. This function is what is used to implement the split function.
 ```javascript
 var stream = require("stream");
 var splitFileStream = require("split-file-stream");

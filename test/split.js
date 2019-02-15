@@ -39,4 +39,27 @@ describe("#split", () => {
 			return done();
 		});
 	});
+
+	it("should create partitions using custom generateFilePath", (done) => {
+		let readStream = new stream.PassThrough(), inStreamContents = "CORRECT";
+		readStream.end(inStreamContents);
+
+		let outputPath = __dirname + "/output/ff"; // file path partition's prefix
+		let expectedFilePaths = Array.apply(null, Array(7)).map((v, i) => `${outputPath}-${i + 1}`);
+		var customSplit = splitFileStream.getSplitWithGenFilePath((n) => `${outputPath}-${(n + 1)}`)
+
+		customSplit(readStream, 1, (filePaths) => {
+			assert.equal(filePaths.length, 7);
+			assert.deepEqual(filePaths, expectedFilePaths);
+
+			let concatString = "";
+			filePaths.forEach((filePath) => {
+				let fileContent = fs.readFileSync(filePath);
+				concatString += fileContent;
+			});
+
+			assert.equal(concatString, inStreamContents);
+			return done();
+		});
+	});
 });

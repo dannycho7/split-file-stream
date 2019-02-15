@@ -71,15 +71,18 @@ const _splitToStream = (outStreamCreate, fileStream, partitionStreamSize, callba
 	});
 };
 
-const split = (fileStream, maxFileSize, rootFilePath, callback) => _split(fileStream, maxFileSize, rootFilePath, (r, n) => `${r}.split-${n}`, callback);
+const split = (fileStream, maxFileSize, rootFilePath, callback) =>
+	_split(fileStream, maxFileSize, (n) => `${rootFilePath}.split-${n}`, callback);
 
-const getSplitWithGenFilePath = (generateFilePath) => ( (f, m, r, callback) => _split(f, m, r, generateFilePath, callback) )
+const getSplitWithGenFilePath = (generateFilePath) =>
+	(f, m, callback) => _split(f, m, generateFilePath, callback);
 
-const _split = (fileStream, maxFileSize, rootFilePath, generateFilePath, callback) => {
+const _split = (fileStream, maxFileSize, generateFilePath, callback) => {
+	assert(maxFileSize > 0, "maxFileSize must be greater than 0");
 	const partitionNames = [];
 
 	const outStreamCreate = (partitionNum) => {
-		let filePath = generateFilePath(rootFilePath, partitionNum);
+		let filePath = generateFilePath(partitionNum);
 		return fs.createWriteStream(filePath);
 	};
 
