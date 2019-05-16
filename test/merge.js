@@ -3,6 +3,18 @@ const fs = require("fs");
 const stream = require("stream");
 const splitFileStream = require("..");
 
+// This will run after each test in all test modules.
+afterEach(function(done){
+	fs.readdir(__dirname + "/output", function(err, files){
+		for(var file of files){
+			fs.unlink(__dirname + "/output/" + file, function(err){
+				if (err) return done(err);
+			});
+		}
+		done();
+	});
+})
+
 describe("#mergeFilesToDisk", () => {
 	it("Should merge 2 1mb partitions into one file", (done) => {
 		let readStream = new stream.PassThrough();
