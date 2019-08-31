@@ -25,7 +25,7 @@ let maxFileSize = 1024; // 1024 bytes per file
 let outputPath = __dirname + "/outputFiles"; // file path partition's prefix
 
 splitFileStream.split(readStream, maxFileSize, outputPath, (filePaths) => {
-	console.log("This is an array of my new files:" filePaths);
+	console.log("This is an array of my new files:", filePaths);
 	/* stream will be saved to files in the path ∈ { ./outputFiles.split-x | x ∈ N } */
 });
 ```
@@ -79,7 +79,7 @@ let outputPath = __dirname + "/outputFiles"; // file path partition's prefix
 var customSplit = splitFileStream.getSplitWithGenFilePath((n) => `${outputPath}-${(n + 1)}`)
 
 customSplit(readStream, maxFileSize, (filePaths) => {
-	console.log("This is an array of my new files:" filePaths);
+	console.log("This is an array of my new files:", filePaths);
 });
 ```
 
@@ -93,6 +93,6 @@ const outStreamCreate = (partitionNum) => {
 };
 
 splitFileStream._splitToStream(outStreamCreate, readStream, partitionStreamSize, (outStreams) => {
-	console.log("This is an array of the created output streams:" outStreams);
+	console.log("This is an array of the created output streams:", outStreams);
 });
 ```
