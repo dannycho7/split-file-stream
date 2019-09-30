@@ -1,4 +1,3 @@
-const assert = require("assert");
 const fs = require("fs");
 const path = require("path");
 const stream = require("stream");
@@ -79,7 +78,9 @@ const getSplitWithGenFilePath = (generateFilePath) =>
 	(f, m, callback) => _split(f, m, generateFilePath, callback);
 
 const _split = (fileStream, maxFileSize, generateFilePath, callback) => {
-	assert(maxFileSize > 0, "maxFileSize must be greater than 0");
+	if (maxFileSize <= 0) {
+		throw new RangeError("maxFileSize must be greater than 0");
+	}
 	const partitionNames = [];
 
 	const outStreamCreate = (partitionNum) => {

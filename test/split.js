@@ -12,7 +12,7 @@ describe("#split", () => {
 		let brokenSplitCall = () =>
 			splitFileStream.split(readStream, 0, __dirname + "/output/ff", () => {});
 
-		assert.throws(brokenSplitCall, AssertionError);
+		assert.throws(brokenSplitCall, RangeError);
 		return done();
 	});
 
