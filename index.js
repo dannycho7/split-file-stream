@@ -3,7 +3,7 @@ const path = require("path");
 const stream = require("stream");
 
 const _mergeFiles = (partitionIndex, partitionNames, combinationStream, callback) => {
-	if(partitionIndex == partitionNames.length) {
+	if (partitionIndex == partitionNames.length) {
 		combinationStream.end();
 		return callback();
 	}
@@ -20,14 +20,14 @@ module.exports.mergeFilesToDisk = (partitionNames, outputPath, callback) => {
 
 module.exports.mergeFilesToStream = (partitionNames, callback) => {
 	let combinationStream = new stream.PassThrough();
-	_mergeFiles(0, partitionNames, combinationStream, () => {});
+	_mergeFiles(0, partitionNames, combinationStream, () => { });
 	callback(combinationStream);
 };
 
 
 const _splitToStream = (outStreamCreate, fileStream, partitionStreamSize, callback) => {
-	const outStreams = [], { highWaterMark: defaultChunkSize } = fileStream._readableState;
-	let currentOutStream, currentFileSize = 0, fileStreamEnded = false, finishedWriteStreams = 0, openStream = false, partitionNum = 0;
+	const outStreams = [], { highWaterMark: defaultChunkSize, objectMode: isObjectMode } = fileStream._readableState;
+	let currentOutStream, currentFileSize = 0, fileStreamEnded = false, finishedWriteStreams = 0, openStream = false, partitionNum = 0, err = null;
 
 	const endCurrentWriteStream = () => {
 		currentOutStream.end();
@@ -36,35 +36,53 @@ const _splitToStream = (outStreamCreate, fileStream, partitionStreamSize, callba
 		openStream = false;
 	};
 
+	const createNewWriteStream = () => {
+		currentOutStream = outStreamCreate(partitionNum);
+		currentOutStream.on("finish", writeStreamFinishHandler);
+		outStreams.push(currentOutStream);
+		partitionNum++;
+	}
+
 	const writeStreamFinishHandler = () => {
 		finishedWriteStreams++;
-		if(fileStreamEnded && partitionNum == finishedWriteStreams) {
-			callback(outStreams);
+		if (fileStreamEnded && partitionNum == finishedWriteStreams) {
+			callback(outStreams, err);
 		}
 	};
 
 	fileStream.on("readable", () => {
 		let chunk;
 		while (null !== (chunk = fileStream.read(Math.min(partitionStreamSize - currentFileSize, defaultChunkSize)))) {
-			if(openStream == false) {
-				currentOutStream = outStreamCreate(partitionNum);
-				currentOutStream.on("finish", writeStreamFinishHandler);
-				outStreams.push(currentOutStream);
-				partitionNum++;
+			if (openStream == false) {
+				createNewWriteStream();
 				openStream = true;
 			}
 
-			currentOutStream.write(chunk);
-			currentFileSize += chunk.length;
+			// A Readable stream in object mode will always return a single item from a call to readable.read(size), regardless of the value of the size argument.
+			const writeChunk = isObjectMode ? JSON.stringify(chunk) : chunk
 
-			if(currentFileSize == partitionStreamSize) {
-				endCurrentWriteStream();
+			if ((currentFileSize + writeChunk.length) <= partitionStreamSize) {
+				currentOutStream.write(isObjectMode ? JSON.stringify(chunk) : chunk);
+				currentFileSize += isObjectMode ? JSON.stringify(chunk).length : chunk.length;
+				if (currentFileSize == partitionStreamSize) {
+					endCurrentWriteStream();
+				}
+			} else {
+				if (writeChunk.length > partitionStreamSize) {
+					// In objectMode one object is read from the stream, it could be that the size is bigger than the partition size
+					err = new RangeError("Could not fit object into maxFileSize")
+				} else {
+					endCurrentWriteStream();
+					createNewWriteStream();
+					currentOutStream.write(isObjectMode ? JSON.stringify(chunk) : chunk);
+					currentFileSize += isObjectMode ? JSON.stringify(chunk).length : chunk.length;
+				}
 			}
 		}
 	});
 
 	fileStream.on("end", () => {
-		if(currentOutStream) {
+		if (currentOutStream) {
 			endCurrentWriteStream();
 		}
 		fileStreamEnded = true;
@@ -87,10 +105,9 @@ const _split = (fileStream, maxFileSize, generateFilePath, callback) => {
 		let filePath = generateFilePath(partitionNum);
 		return fs.createWriteStream(filePath);
 	};
-
-	_splitToStream(outStreamCreate, fileStream, maxFileSize, (fileWriteStreams) => {
+	_splitToStream(outStreamCreate, fileStream, maxFileSize, (fileWriteStreams, err) => {
 		fileWriteStreams.forEach((fileWriteStream) => partitionNames.push(fileWriteStream["path"]));
-		callback(partitionNames);
+		callback(partitionNames, err);
 	});
 };
 
