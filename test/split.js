@@ -21,7 +21,7 @@ describe("#split", () => {
 		readStream.end("abcde");
 
 		splitFileStream.split(readStream, 1, __dirname + "/output/ff", (filePaths) => {
-			assert.equal(5, filePaths.length);
+			assert.strictEqual(5, filePaths.length);
 			return done();
 		});
 	});
@@ -31,7 +31,7 @@ describe("#split", () => {
 		readStream.end(new Buffer.alloc(1024 * 1024 * 100));
 
 		splitFileStream.split(readStream, 1024 * 1024 * 50, __dirname + "/output/ff", (filePaths) => {
-			assert.equal(2, filePaths.length);
+			assert.strictEqual(2, filePaths.length);
 			return done();
 		});
 	});
@@ -47,7 +47,7 @@ describe("#split", () => {
 				concatString += fileContent;
 			});
 
-			assert.equal(concatString, inStreamContents);
+			assert.strictEqual(concatString, inStreamContents);
 			return done();
 		});
 	});
@@ -61,8 +61,8 @@ describe("#split", () => {
 		var customSplit = splitFileStream.getSplitWithGenFilePath((n) => `${outputPath}-${(n + 1)}`)
 
 		customSplit(readStream, 1, (filePaths) => {
-			assert.equal(filePaths.length, 7);
-			assert.deepEqual(filePaths, expectedFilePaths);
+			assert.strictEqual(filePaths.length, 7);
+			assert.deepStrictEqual(filePaths, expectedFilePaths);
 
 			let concatString = "";
 			filePaths.forEach((filePath) => {
@@ -70,7 +70,7 @@ describe("#split", () => {
 				concatString += fileContent;
 			});
 
-			assert.equal(concatString, inStreamContents);
+			assert.strictEqual(concatString, inStreamContents);
 			return done();
 		});
 	});
