@@ -21,11 +21,11 @@ describe("#mergeFilesToDisk", () => {
 		readStream.end(new Buffer.alloc(1024 * 1024 * 2));
 
 		splitFileStream.split(readStream, 1024 * 1024 * 1, __dirname + "/output/ff", (filePaths) => {
-			assert.equal(2, filePaths.length);
+			assert.strictEqual(2, filePaths.length);
 			let mergeFilePath = __dirname + "/output/ff.fullfile";
 			splitFileStream.mergeFilesToDisk(filePaths, mergeFilePath, () => {
 				fs.stat(mergeFilePath, (err, stats) => {
-					assert.equal(1024 * 1024 * 2, stats.size);
+					assert.strictEqual(1024 * 1024 * 2, stats.size);
 					return done();
 				});
 			});
@@ -39,7 +39,7 @@ describe("#mergeFilesToStream", () => {
 		readStream.end(new Buffer.alloc(1024 * 1024 * 2));
 
 		splitFileStream.split(readStream, 1024 * 1024 * 1, __dirname + "/output/ff", (filePaths) => {
-			assert.equal(2, filePaths.length);
+			assert.strictEqual(2, filePaths.length);
 			let mergeFilePath = __dirname + "/output/ff.fullfile";
 			splitFileStream.mergeFilesToStream(filePaths, (stream) => {
 				let dataLength = 0;
@@ -48,7 +48,7 @@ describe("#mergeFilesToStream", () => {
 				});
 
 				stream.on("finish", () => {
-					assert.equal(dataLength, 1024 * 1024 * 2);
+					assert.strictEqual(dataLength, 1024 * 1024 * 2);
 					return done();
 				});
 			});
