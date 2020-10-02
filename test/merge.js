@@ -20,7 +20,8 @@ describe("#mergeFilesToDisk", () => {
 		let readStream = new stream.PassThrough();
 		readStream.end(new Buffer.alloc(1024 * 1024 * 2));
 
-		splitFileStream.split(readStream, 1024 * 1024 * 1, __dirname + "/output/ff", (filePaths, err) => {
+		splitFileStream.split(readStream, 1024 * 1024 * 1, __dirname + "/output/ff", (err, filePaths) => {
+			assert.strictEqual(null, err);
 			assert.strictEqual(2, filePaths.length);
 			let mergeFilePath = __dirname + "/output/ff.fullfile";
 			splitFileStream.mergeFilesToDisk(filePaths, mergeFilePath, () => {
@@ -38,7 +39,8 @@ describe("#mergeFilesToStream", () => {
 		let readStream = new stream.PassThrough();
 		readStream.end(new Buffer.alloc(1024 * 1024 * 2));
 
-		splitFileStream.split(readStream, 1024 * 1024 * 1, __dirname + "/output/ff", (filePaths, err) => {
+		splitFileStream.split(readStream, 1024 * 1024 * 1, __dirname + "/output/ff", (err, filePaths) => {
+			assert.strictEqual(null, err);
 			assert.strictEqual(2, filePaths.length);
 			let mergeFilePath = __dirname + "/output/ff.fullfile";
 			splitFileStream.mergeFilesToStream(filePaths, (stream) => {
