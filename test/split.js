@@ -20,7 +20,8 @@ describe("#split", () => {
 		let readStream = new stream.PassThrough();
 		readStream.end("abcde");
 
-		splitFileStream.split(readStream, 1, __dirname + "/output/ff", (filePaths, err) => {
+		splitFileStream.split(readStream, 1, __dirname + "/output/ff", (err, filePaths) => {
+			assert.strictEqual(null, err);
 			assert.strictEqual(5, filePaths.length);
 			return done();
 		});
@@ -30,7 +31,8 @@ describe("#split", () => {
 		let readStream = new stream.PassThrough();
 		readStream.end(new Buffer.alloc(1024 * 1024 * 100));
 
-		splitFileStream.split(readStream, 1024 * 1024 * 50, __dirname + "/output/ff", (filePaths, err) => {
+		splitFileStream.split(readStream, 1024 * 1024 * 50, __dirname + "/output/ff", (err, filePaths) => {
+			assert.strictEqual(null, err);
 			assert.strictEqual(2, filePaths.length);
 			return done();
 		});
@@ -40,7 +42,8 @@ describe("#split", () => {
 		let readStream = new stream.PassThrough(), inStreamContents = "CORRECT";
 		readStream.end(inStreamContents);
 
-		splitFileStream.split(readStream, 1, __dirname + "/output/ff", (filePaths, err) => {
+		splitFileStream.split(readStream, 1, __dirname + "/output/ff", (err, filePaths) => {
+			assert.strictEqual(null, err);
 			let concatString = "";
 			filePaths.forEach((filePath) => {
 				let fileContent = fs.readFileSync(filePath);
@@ -60,7 +63,8 @@ describe("#split", () => {
 		let expectedFilePaths = Array.apply(null, Array(7)).map((v, i) => `${outputPath}-${i + 1}`);
 		var customSplit = splitFileStream.getSplitWithGenFilePath((n) => `${outputPath}-${(n + 1)}`)
 
-		customSplit(readStream, 1, (filePaths, err) => {
+		customSplit(readStream, 1, (err, filePaths) => {
+			assert.strictEqual(null, err);
 			assert.strictEqual(filePaths.length, 7);
 			assert.deepStrictEqual(filePaths, expectedFilePaths);
 
@@ -83,7 +87,8 @@ describe("#split", () => {
 		readStream.push({ qr: 'st' }) // 1 object is 11 bytes (2 bytes per character, including { })
 		readStream.push({ uv: 'wx' })
 		readStream.push(null) // end readStream
-		splitFileStream.split(readStream, 22, __dirname + "/output/ff", (filePaths, err) => {
+		splitFileStream.split(readStream, 22, __dirname + "/output/ff", (err, filePaths) => {
+			assert.strictEqual(null, err);
 			assert.strictEqual(1, filePaths.length);
 			return done();
 		});
@@ -98,7 +103,7 @@ describe("#split", () => {
 		readStream.push({ ef: 'ghi' }) // 12 bytes (2 bytes per character, including { })
 		readStream.push(null) // end readStream
 
-		splitFileStream.split(readStream, 11, __dirname + "/output/ff", (filePaths, err) => {
+		splitFileStream.split(readStream, 11, __dirname + "/output/ff", (err, filePaths) => {
 			assert.strictEqual(2, filePaths.length);
 			const {size: fileSize} = fs.statSync(filePaths[0]);
 			assert.strictEqual(11, fileSize);
@@ -120,7 +125,7 @@ describe("#split", () => {
 		readStream.push({ ef: 'ghi' }) // 12 bytes (2 bytes per character, including { })
 		readStream.push(null) // end readStream
 
-		splitFileStream.split(readStream, 22, __dirname + "/output/ff", (filePaths, err) => {
+		splitFileStream.split(readStream, 22, __dirname + "/output/ff", (err, filePaths) => {
 			assert.strictEqual(2, filePaths.length);
 			const {size: fileSize} = fs.statSync(filePaths[0]);
 			assert.strictEqual(11, fileSize);
@@ -144,7 +149,8 @@ describe("#split", () => {
 		readStream.push({ ij: 'kl' }) // 1 object is 8 bytes (2 byter per character, as concatenated by Transform)
 		readStream.push({ mn: 'op' })
 		readStream.push(null) // end readStream
-		splitFileStream.split(readStream.pipe(myTransform), 8, __dirname + "/output/ff", (filePaths, err) => {
+		splitFileStream.split(readStream.pipe(myTransform), 8, __dirname + "/output/ff", (err, filePaths) => {
+			assert.strictEqual(null, err);
 			assert.strictEqual(2, filePaths.length);
 			return done();
 		});
@@ -163,7 +169,8 @@ describe("#split", () => {
 		readStream.push({ ij: 'kl' }) // 1 object is 8 bytes (2 byter per character, as concatenated by Transform)
 		readStream.push({ mn: 'op' })
 		readStream.push(null) // end readStream
-		splitFileStream.split(readStream.pipe(myTransform), 9, __dirname + "/output/ff", (filePaths, err) => {
+		splitFileStream.split(readStream.pipe(myTransform), 9, __dirname + "/output/ff", (err, filePaths) => {
+			assert.strictEqual(null, err);
 			assert.strictEqual(2, filePaths.length);
 			return done();
 		});

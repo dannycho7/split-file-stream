@@ -24,7 +24,10 @@ var splitFileStream = require("split-file-stream");
 let maxFileSize = 1024; // 1024 bytes per file
 let outputPath = __dirname + "/outputFiles"; // file path partition's prefix
 
-splitFileStream.split(readStream, maxFileSize, outputPath, (filePaths) => {
+splitFileStream.split(readStream, maxFileSize, outputPath, (error, filePaths) => {
+	/* If an error occured, filePaths will still contain all files that were written */
+	if (error) throw error; // Alternatively you could just log the error instead of throwing: if (error) console.error(error)
+
 	console.log("This is an array of my new files:", filePaths);
 	/* stream will be saved to files in the path ∈ { ./outputFiles.split-x | x ∈ N } */
 });
@@ -78,7 +81,10 @@ let maxFileSize = 1024; // 1024 bytes per file
 let outputPath = __dirname + "/outputFiles"; // file path partition's prefix
 var customSplit = splitFileStream.getSplitWithGenFilePath((n) => `${outputPath}-${(n + 1)}`)
 
-customSplit(readStream, maxFileSize, (filePaths) => {
+customSplit(readStream, maxFileSize, (error, filePaths) => {
+	/* If an error occured, filePaths will still contain all files that were written */
+	if (error) throw error; // Alternatively you could just log the error instead of throwing: if (error) console.error(error)
+
 	console.log("This is an array of my new files:", filePaths);
 });
 ```
@@ -92,7 +98,10 @@ const outStreamCreate = (partitionNum) => {
 	return stream.passThrough();
 };
 
-splitFileStream._splitToStream(outStreamCreate, readStream, partitionStreamSize, (outStreams) => {
+splitFileStream._splitToStream(outStreamCreate, readStream, partitionStreamSize, (error, outStreams) => {
+	/* If an error occured, filePaths will still contain all files that were written */
+	if (error) throw error; // Alternatively you could just log the error instead of throwing: if (error) console.error(error)
+
 	console.log("This is an array of the created output streams:", outStreams);
 });
 ```

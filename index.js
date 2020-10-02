@@ -46,7 +46,7 @@ const _splitToStream = (outStreamCreate, fileStream, partitionStreamSize, callba
 	const writeStreamFinishHandler = () => {
 		finishedWriteStreams++;
 		if (fileStreamEnded && partitionNum == finishedWriteStreams) {
-			callback(outStreams, err);
+			callback(err, outStreams);
 		}
 	};
 
@@ -105,9 +105,9 @@ const _split = (fileStream, maxFileSize, generateFilePath, callback) => {
 		let filePath = generateFilePath(partitionNum);
 		return fs.createWriteStream(filePath);
 	};
-	_splitToStream(outStreamCreate, fileStream, maxFileSize, (fileWriteStreams, err) => {
+	_splitToStream(outStreamCreate, fileStream, maxFileSize, (err, fileWriteStreams) => {
 		fileWriteStreams.forEach((fileWriteStream) => partitionNames.push(fileWriteStream["path"]));
-		callback(partitionNames, err);
+		callback(err, partitionNames);
 	});
 };
 
